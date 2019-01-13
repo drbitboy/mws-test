@@ -9,9 +9,11 @@ Post any queries here at https://gitter.im/jupyter-widgets/Lobby, or email brian
 
 The main purpose of posting this is for someone who knows better to look at how we modify the brushes programmatically, when the OP brush is moved, or when one of the green 95% buttons are pressed.  Please feel free to clone/fork, add branches, and issue Pull Requests as you see fit e.g. adding comments or better code.
 
+Comments and criticisms are equally welcome.
+
 Thanks!
 
-## Details
+## Operational details
 
 We find we have to to [Restart] the kernel to get it working initially.
 
@@ -29,9 +31,27 @@ You can enable brushing in each the AP plots by clicking its [Brush] checkbox on
 
 If there are more than one AP brushes enabled, modifying one should modify them all, but if the AP plot range is small enough, there will be a humorous display. I don't know why it doesn't turn into an infinite loop.
 
-## Issues
+The file mws_log.txt records all of the callbacks, and a bit more for the 95% button callbacks; doing
+
+    tail -f mws_log.txt
+
+while running the notebook is interesting.
+
+## Known issues
 
 The biggest problem we have is that we have a hard-to-reproduce, intermittent problem:  sometimes, when the OP brush is moved, the DS brush apparently loses its callback (brushDs.observe(on_brushDs)), after which modifying the DS brush with the mouse fails to update the AP plots; however, the green 95% buttons do still move the AP plot range.
+
+A confusing aspect of the brush behavior when changing brushes programmatically is that if we change the brush limit values just once, they are not updated in the displate.  Our workaround has been to set brush.selected to the new values with a slight offset (0.001), and then set them to to the desired new values.  I *think* this has something to do with the .brushing property that normally is set True at the start (mouse-down) of a mouse and then is set False at the end (mouse-up), but that is just a guess at this point.
+
+Another confusing aspect of all of this is many, many "after the fact" callbacks, driven by [hold trait notifications]; I wonder if those are the actual problem, or perhaps if the way we are programmatically updating the brushes is causing the undesired [hold trait notifications] activities.
+
+Another problem is keeping visible AP brushes lined up when one of them is changed.
+
+The callback for the OP brush is on_brushOv in qoverview.py.  It modifies the DS plot limits and replots the data in the DS plot; if the existing DS brush limits are outside the DS plot limits, it also modifies (truncates or shifts) the DS brush, which in turn modifies the AP plot limits.
+
+The callback for the DS brush is on_brushDs in qdataselector.py.
+
+At some point I may add some better comments in the about what is happening.
 
 ## Miscellany
 
