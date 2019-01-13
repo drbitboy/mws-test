@@ -24,6 +24,11 @@ class EMPTY(object):
 
 ########################################################################
 def on_bn95s(change):
+    """
+    Callback for green [<] and [>] buttons that shift DS brush by
+    95% of its width
+
+    """
     do_mws_log_actions(dict(change=change))
     global brushDs
     try:
@@ -408,6 +413,11 @@ def manageBrushHighlight(selected, xLo, xHi):
 
 ########################################################################
 def on_cbMarkDs(change):
+    """
+    Callback for DS [Mark] button to turn on plotting data points as
+    circles, in addition to lines
+
+    """
     do_mws_log_actions(dict(change=change))
     global cbMarkDs, lbWaitDs
 
@@ -450,16 +460,22 @@ def markPlotsDs(bMark = False, dsKey = ''):
 
 ########################################################################
 def on_cbCheckboxesDs(change):
+    """
+    Callback for series' visibility Checkboxes that toggle the
+    visibility of the series plotted in the DS and OP
+
+    """
     do_mws_log_actions(dict(change=change))
     global cbMarkDs
-    # Toggles the visibility of the series plotted in the Data Selector
     co = change.owner
 
     for kdata in c.dtSelectorDs:
         sr = c.dtSelectorDs[kdata]
         if co is sr.cbShow:
-            sr.line.visible = change.new  # Set visibility of corresponding trace in the Data Selector
-            ov.updateOverviewVisibility(kdata) # Set visibility of corresponding trace in the Data Selector
+            # Set visibility of corresponding trace in the DS, and
+            # in the OP
+            sr.line.visible = change.new
+            ov.updateOverviewVisibility(kdata)
             markPlotsDs(bMark=(cbMarkDs.value and change.new), dsKey=kdata)
 
             break
@@ -506,6 +522,14 @@ def enableBrushDsCallback(enable=True):
 
 ########################################################################
 def on_brushDs(change,force=False):
+    """
+    Callback for DS brush activities, mostly mouse drags.
+    N.B. Does nothing if [brush].brushing is True (start of drag) unless
+         force keyword argument is True.  Normal callback events will
+         never always have force==False; force keyword is used for
+         programmatic callers of this calback routine.
+
+    """
     do_mws_log_actions(dict(change=change,force=force
                            ,caller=sys._getframe(1).f_code.co_name
                            ))
@@ -522,7 +546,9 @@ def on_brushDs(change,force=False):
     # xScaleAp is global and on exit from this routine contains the plot scale derived from brushDs
     #'brushing', 'color', 'marks', 'scale', 'selected'
 
-    b = change.owner  # The Calling brush, in this case it is always brushDs
+    ### The Calling brush, in this case it is always brushDs
+    b = change.owner
+
     if force or not b.brushing:
 
         # Skip out of range errors that can occur when the brush area is very small.
@@ -549,10 +575,11 @@ def on_brushDs(change,force=False):
             setTimeValues(c.dtTimeLabelsAp, bSelLo, bSelHi)
             c.xScaleAp.min, c.xScaleAp.max = bSelLo, bSelHi
 
-            # Using r0 and r1 we have access to the range of X and Y-values under the Brush.
-            # This is used to fill the Analysis Panel plots with the data under the
-            # Data Selector Brush, effectively zooming in on the region of the
-            # Data Selector covered by the brush
+            # Using r0 and r1 we have access to the range of X- and
+            # Y-values under the Brush.  This is used to fill the
+            # Analysis Panel plots with the data under the Data Selector
+            # Brush, effectively zooming in on the region of the Data
+            # Selector covered by the brush
 
             # Disable Analysis Panel Subplot callbacks
             ap.registerPlotsApCallbacks(c.dtPlotsAp, doregister=False)
