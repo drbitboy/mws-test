@@ -7,9 +7,13 @@ This is a minimal repo that implements the behavior we are trying to correct:
 
 Post any queries here at https://gitter.im/jupyter-widgets/Lobby, or email briantcarcich@gmail.com.
 
+The main purpose of posting this is for someone who knows better to look at how we modify the brushes programmatically, when the OP brush is moved, or when one of the green 95% buttons are pressed.  Please feel free to clone/fork, add branches, and issue Pull Requests as you see fit e.g. adding comments or better code.
+
 Thanks!
 
 ## Details
+
+We find we have to to [Restart] the kernel to get it working initially.
 
 The top plot (Overview Panel; OP) is an overview plot of all data loaded: select the last Sol - Martian day - you want to seeand the number of Sols, and then click the [Load] button
 
@@ -25,8 +29,12 @@ You can enable brushing in each the AP plots by clicking its [Brush] checkbox on
 
 If there are more than one AP brushes enabled, modifying one should modify them all, but if the AP plot range is small enough, there will be a humorous display. I don't know why it doesn't turn into an infinite loop.
 
-Anyway, the main purpose of posting this is for someone who knows better to look at how we modify the brushes programmatically, when the OP brush is moved, or when one of the green 95% buttons are pressed.
+## Issues
 
-It's synthetic data; the algorithm is in db_module.py.
+The biggest problem we have is that we have a hard-to-reproduce, intermittent problem:  sometimes, when the OP brush is moved, the DS brush apparently loses its callback (brushDs.observe(on_brushDs)), after which modifying the DS brush with the mouse fails to update the AP plots; however, the green 95% buttons do still move the AP plot range.
+
+## Miscellany
+
+The data are synthetic; the algorithm is in db_module.py.
 
 The conversion from SCLK (spacecraft clock) to UTC and to Local Mean Solar Time (LMST) are also in db_module.py.  Those algorithm are trimmed down versions approximating what we get from NAIF/SPICE (cf. http://naif.jpl.nasa.gov/pub/naif/INSIGHT/kernels/, specifically http://naif.jpl.nasa.gov/pub/naif/INSIGHT/kernels/sclk/insight_lmst_2016e09o_v1.tsc and http://naif.jpl.nasa.gov/pub/naif/INSIGHT/kernels/lsk/naif0012.tls ).
