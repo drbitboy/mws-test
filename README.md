@@ -51,7 +51,7 @@ The callback for the OP brush is on_brushOv in qoverview.py.  It modifies the DS
 
 The callback for the DS brush is on_brushDs in qdataselector.py.
 
-At some point I may add some better comments in the about what is happening.
+At some point I may add some better comments in the code about what is happening.
 
 ## Miscellany
 
