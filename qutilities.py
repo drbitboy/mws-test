@@ -16,53 +16,104 @@ try:
 except:
     qmws_log_actions = None
 
+
+### Attributes which mungit should skip:
 mungit_skip = set('scale marks margin padding height display width keys comm color layout tooltip options style'.split())
+
+
+########################################################################
 def mungit(arg,depth=0):
+    """Recursively turn classes into strings for do_mws_log_actions"""
     if depth > 5: return str(arg)
-    from qdataselector import EMPTY
+
     if ( isinstance(arg,bq.interacts.BrushIntervalSelector)
       or isinstance(arg,wg.Checkbox)
       or isinstance(arg,wg.Dropdown)
       or isinstance(arg,wg.SelectMultiple)
        ):
+        ### Special handling for ipywidget class instances:  => dict
         return {str(type(arg)):mungit(vars(arg),depth+1)}
+
     if isinstance(arg,dict):
+        ### Handling for dicts
         rtn = dict()
         for key in arg:
+
+            ### Skip keys in mungit, or keys that are not _trait_values
+            ### and start with an underscore
             if key in mungit_skip: continue
             if key!='_trait_values' and key[:1]=='_': continue
+
+            ### Recurse value associated with key
             rtn[key] = mungit(arg[key],depth+1)
         return rtn
+
     try:
+        ### Handle sequences (lists, tuples)
         rtn = list()
         for item in arg: rtn.appen(mungit(item,depth+1))
         return rtn
     except:
+        ### Handle anything not handled above
         return str(arg)
 
 
 ########################################################################
+s_htn = 'hold_trait_notifications'
 def do_mws_log_actions(arg):
+    """
+    Log actions if qmws_logactions.py was imported
+    Return True if call stack includes method hold_trait_notifications
+
+    """
+
+    ### Return variable:  True IFF hold_trait_notifications was found
+    found_htn = False
+
     try:
-        if qmws_log_actions is None: return
+
+        ### If qmws_log_actions wasn't imported, only look at call stack
+        if qmws_log_actions is None:
+            depth = 1
+            while depth:
+                try:
+                    if s_htn == sys._getframe(depth).f_code.co_name:
+                        return True
+                    depth += 1
+                ### Assume exception indicates end of call stack
+                except: return False
+
+        ### Open log file
         with open(mws_log_file,'a') as f_log:
 
+            ### Traverse call stack
             depth = 1
             callers = []
             while depth:
                 try:
-                    callers.append(sys._getframe(depth).f_code.co_name)
+                    caller = sys._getframe(depth).f_code.co_name
+                    callers.append(caller)
+                    ### Set found_htn IFF hold_trait_notifications found
+                    if not found_htn: found_htn = caller == s_htn
+
                     depth += 1
+                ### Assume exception indicates end of call stack
                 except: break
 
+            ### Get UTC and JSON string for argument
             utc = datetime.datetime.now().isoformat()
             arg_json = mungit(arg)
+
+            ### Write to log file
             f_log.write('========================================================================\n{}\n'.format(
                        sj.dumps(dict(callers=callers,utc=utc,data=arg_json))
                        ))
     except:
             import traceback
             traceback.print_exc()
+
+    ### Return whether hold_trait_notifications was in call stack
+    return found_htn
 
 
 ########################################################################
@@ -82,19 +133,21 @@ def takeClosestIndex(myList, myNumber):
 
 
 ########################################################################
-dt_prefix_times = None
+### Prefix for setTimeValues assignments to dtLabels
+dt_prefix_times = dict(
+[(ktime
+ ,('<p style="margin: 0px 0px 0px 0px; line-height : 1em;">'
+   '<span style="color: red; margin: 0px 0px 0px 0px; line-height : 1em;">{}: '
+  ).format(ktime)
+ ,)
+ for ktime in c.kTimeKeys
+])
+
+
+########################################################################
 def setTimeValues(dtLabels, minSclk, maxSclk):
 
     """Set values of the labels that display Time range"""
-
-    global dt_prefix_times
-
-    if dt_prefix_times is None:
-        dt_prefix_times = dict([(ktime
-        , ('<p style="margin: 0px 0px 0px 0px; line-height : 1em;">'
-           '<span style="color: red; margin: 0px 0px 0px 0px; line-height : 1em;">{}: '
-          ).format(ktime)
-        , ) for ktime in c.kTimeKeys])
 
     dtTimeFormat={c.kSCLK: "</span>{}<br /><span style='padding-left:41px;'>&Delta; = {}</span></p>"
                  ,c.kLMST:  "</span>{}<br /><span style='padding-left:34px;'>{}</span></p>"
@@ -114,6 +167,7 @@ def setTimeValues(dtLabels, minSclk, maxSclk):
 
 ########################################################################
 def updateErrorMsg(newErrorMsg=None):
+    """Update .value text in error message widget, c.globalErrorMsg"""
     if not (newErrorMsg is None): c.globalErrorMsg = str(newErrorMsg).replace('\n','//')
     try   : c.lbErrorMsg.value = str(c.globalErrorMsg)
     except: pass
