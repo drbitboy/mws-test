@@ -48,10 +48,13 @@ def mungit(arg,depth=0):
             rtn[key] = mungit(arg[key],depth+1)
         return rtn
 
+    if isinstance(arg,str):
+        return str(arg)
+
     try:
         ### Handle sequences (lists, tuples)
         rtn = list()
-        for item in arg: rtn.appen(mungit(item,depth+1))
+        for item in arg: rtn.append(mungit(item,depth+1))
         return rtn
     except:
         ### Handle anything not handled above

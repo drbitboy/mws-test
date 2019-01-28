@@ -96,7 +96,6 @@ def on_bn95s(change):
         do_mws_log_actions(dict(before='brushDs.brushing=True'))
         brushDs.brushing = True
         do_mws_log_actions(dict(after='brushDs.brushing=True'))
-        brushDs.selected = [sclkMin+0.001,sclkMax+0.001]
         brushDs.selected = [sclkMin,sclkMax]
         #brushDs.brushing = False
 
@@ -294,6 +293,7 @@ def updateDataSelector():
 
     global brushDs, bEnableBrushDsLast
     global cbMarkDs
+    do_mws_log_actions(dict(check=brushDs is c.figDs.interaction))
 
     ov.manage_bnFetchSolRange(disable=True, message="updateDataSelector")
 

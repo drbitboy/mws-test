@@ -22,7 +22,6 @@ from qutilities import setTimeValues, updateErrorMsg, takeClosestIndex, do_mws_l
 ########################################################################
 def initOverview():
 
-    # global brushOv, xScaleOv, figOv, bFirstCall
     global brushOv, figOv, bFirstCall
 
     bFirstCall = True  # Flag used by on_bnFetchSolRange to tell if this the first call after initialization
@@ -280,10 +279,6 @@ def on_brushOv(change,force=False):
 
         # Update Data Selector time range display
         try:
-            # global obo
-            # obo += 1
-            # print("on_brushOv: Count: {} Old: {} New: {} Type: {} Name: {} Brushing: {}".format(obo, change.old, change.new, change.type, change.name, b.brushing))
-
             # Update Data Selector and Analysis Panel labels
             if b.selected is None: return
             if len(b.selected) < 1: return
@@ -310,11 +305,14 @@ def on_brushOv(change,force=False):
                                      , c.dtInstrumentData
                                      , compress_to=c.compress_to
                                      )
+
         except Exception as e:
             updateErrorMsg('on_brushOv:  {}'.format(str(e)))
             traceback.print_exc()
+
         finally:
             manage_bnFetchSolRange(disable=False)
+
 
 ########################################################################
 def manage_bnFetchSolRange(disable=False, message=''):

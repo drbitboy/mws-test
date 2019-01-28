@@ -136,10 +136,11 @@ def registerPlotsApCallbacks(dtPlotsAp,doregister=True):
 
 
 ########################################################################
+current_brush = None
 def on_brushesAp(change):
-    do_mws_log_actions(dict(change=change))
+    global current_brush
 
-    #global bBrushPresentAp
+    do_mws_log_actions(dict(change=change,current_brush=current_brush))
 
     # This routine has two purposes, to synchronize the Analysis Panel brushes and
     # to display the data values located at the edges of the brushes.
@@ -163,12 +164,15 @@ def on_brushesAp(change):
     else:
         c.bBrushPresentAp = True
 
+    if current_brush is None: current_brush = b
+    else                    : return
+
     for kdata in c.dtPlotsAp:
         cb = c.dtPlotsAp[kdata].brush
-        if cb is not b:
-            cb.selected = b.selected + 1
+        if not (cb is b):
             cb.selected = b.selected
 
+    current_brush = None
 
     # Recover Y-values at the edges of the brush and display value strings
     postInstrumentValues()
